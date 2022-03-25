@@ -1,45 +1,48 @@
 // 리액트 패키지를 불러옵니다.
 import React from 'react'; 
 import { BucketItem, Container } from './Styled';
+import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Detail } from './Detail';
+import NotFound from './NotFound';
+import {useSelector, useDispatch} from "react-redux";
+import { createBucket } from '../redux/modules/bucket';
 
-class BucketList extends React.Component {
-    constructor(props) {
-      super(props);
-  
-      this.state = {
-        list: ["영화관 가기", "히히 로스트아크 하기", "응애?"],
-      };
-  
-      this.text = React.createRef();
-    }
-  
-    componentDidMount() {}
-  
-    addBucket = () => {
-      const new_item = this.text.current.value;
-      this.setState({list : [...this.state.list, new_item]});
-    };
-  
-    render() {
-      return (
-        <>
-            <Container width="400px" height="600px">
-                <h1 className='title'>버킷리스트</h1>
-                <hr/>
-                <div>
-                    {this.state.list.map((value, index) => <BucketItem key={index}>{value}</BucketItem>)}
-                </div>
-            </Container>
-            <Container width="400px" height="200px" className="flex-column">
-                <div>
-                    <input ref={this.text}></input>
-                    <button onClick={this.addBucket}>추가하기</button>
-                </div>
-            </Container>
-        </>
-      );
-    }
+function BucketList(props) {
+  const text = React.useRef(null);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const addBucket = () => {
+    dispatch(createBucket(text.current.value));
   }
+  const list = useSelector((state) => state.bucket.list);
+
+  return(
+    <>
+      <Container width="400px" height="600px">
+          <h1 className='title'>버킷리스트</h1>
+          <hr/>
+          <Routes>
+            <Route path='/detail/:index' element={<Detail/>}></Route>
+            <Route path='/' element={
+              <div>
+                {list.map((value, index) => 
+                  <BucketItem key={index} onClick={() => navigate("/detail/"+index)}>
+                    {value}
+                  </BucketItem>)}
+              </div>
+            }></Route>
+            <Route path='*' element={<NotFound/>}></Route>
+          </Routes>
+      </Container>
+      <Container width="400px" height="200px" className="flex-column">
+          <div>
+              <input ref={text}></input>
+              <button onClick={addBucket}>추가하기</button>
+          </div>
+      </Container>
+    </>
+  );
+}
   
-  export {BucketList};
+export {BucketList};
   
